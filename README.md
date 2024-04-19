@@ -1,6 +1,6 @@
 # site-assets-deployment
 
-Static Assets Deployment. A custom CloudFormation resource that deploys static web assets to an S3 bucket.
+A custom CloudFormation resource that deploys static web assets to an S3 bucket.
 
 ## Description
 
