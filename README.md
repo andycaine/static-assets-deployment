@@ -60,7 +60,7 @@ Then you can deploy your stack. These steps assume you have the [SAM CLI install
 ```
 $ sam build
 $ sam deploy \
-    --capabilities CAPABILITIES_IAM CAPABILITIES_AUTO_EXPAND \
+    --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
     --stack-name example-stack \
     --resolve-s3
 ```
