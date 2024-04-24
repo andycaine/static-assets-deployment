@@ -10,6 +10,10 @@ Parameters:
   StaticAssetsBucket:
     Type: String
     Description: The bucket to deploy the static assets to.
+  CacheControl:
+    Type: String
+    Description: The Cache-Control meta-data to add to s3 asset uploads
+    Default: "max-age=31536000, immutable"
   Timeout:
     Type: Number
     Description: The timeout for deployment of the static assets.
@@ -24,7 +28,7 @@ Metadata:
     ReadmeUrl: README.md
     Labels: ['cloudformation', 's3', 'python']
     HomePageUrl: https://github.com/andycaine/static-assets-deployment#readme
-    SemanticVersion: 0.1.2
+    SemanticVersion: 0.2.0
     SourceCodeUrl: https://github.com/andycaine/static-assets-deployment
 Resources:
 
@@ -37,6 +41,8 @@ Resources:
       Handler: app.handler
       CodeUri: ./sad
       Timeout: !Ref Timeout
+      Environment:
+        CACHE_CONTROL: !Ref CacheControl
       Layers:
         - !Ref StaticAssetsLayerArn
       Policies:

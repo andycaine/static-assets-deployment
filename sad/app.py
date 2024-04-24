@@ -13,7 +13,7 @@ helper = crhelper.CfnResource(
 )
 s3 = boto3.client('s3')
 dir = '/opt/python'
-
+cache_control = os.getenv('CACHE_CONTROL', 'max-age=31536000, immutable')
 
 def _content_type(file_name):
     """
@@ -28,6 +28,7 @@ def _content_type(file_name):
         '.html': 'text/html',
         '.css': 'text/css',
         '.js': 'application/javascript',
+        '.xml': 'application/xml',
         '.png': 'image/png',
     }
     _, ext = os.path.splitext(file_name)
@@ -51,7 +52,7 @@ def _upload(event):
             target_path,
             ExtraArgs={
                 'ContentType': _content_type(local_path),
-                'CacheControl': 'max-age=31536000, immutable'
+                'CacheControl': cache_control
             }
         )
         uploaded.append(local_path)
