@@ -28,7 +28,7 @@ Metadata:
     ReadmeUrl: README.md
     Labels: ['cloudformation', 's3', 'python']
     HomePageUrl: https://github.com/andycaine/static-assets-deployment#readme
-    SemanticVersion: 0.2.1
+    SemanticVersion: 0.2.3
     SourceCodeUrl: https://github.com/andycaine/static-assets-deployment
 Resources:
 
@@ -55,3 +55,4 @@ Resources:
     Properties:
       ServiceToken: !GetAtt StaticAssetsDeployer.Arn
       BucketName: !Ref StaticAssetsBucket
+      StaticAssetsLayerArn: !Ref StaticAssetsLayerArn

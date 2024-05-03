@@ -80,7 +80,7 @@ def create(event, context):
 @helper.update
 def update(event, context):
     logger.info('Handling update')
-    return _upload()
+    return _upload(event)
 
 
 @helper.delete
