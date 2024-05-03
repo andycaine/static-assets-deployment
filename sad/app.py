@@ -14,6 +14,8 @@ helper = crhelper.CfnResource(
 s3 = boto3.client('s3')
 dir = '/opt/python'
 cache_control = os.getenv('CACHE_CONTROL', 'max-age=31536000, immutable')
+layer_arn = os.environ['LAYER_ARN']
+
 
 def _content_type(file_name):
     """
@@ -39,8 +41,13 @@ def handler(event, context):
     helper(event, context)
 
 
+def _layer_arn_sha256():
+    return hashlib.sha256(layer_arn.encode()).hexdigest()
+
+
 def _upload(event):
     uploaded = []
+    layer_arn_sha256 = _layer_arn_sha256()
     dirs = os.listdir(dir)
     logger.info(dirs)
     bucket_name = event['ResourceProperties']['BucketName']
@@ -49,7 +56,7 @@ def _upload(event):
         s3.upload_file(
             local_path,
             bucket_name,
-            target_path,
+            f'{layer_arn_sha256}/{target_path}',
             ExtraArgs={
                 'ContentType': _content_type(local_path),
                 'CacheControl': cache_control
@@ -57,10 +64,7 @@ def _upload(event):
         )
         uploaded.append(local_path)
 
-    concatenated_names = ''.join(uploaded)
-    hashed_names = hashlib.md5(concatenated_names.encode()).hexdigest()
-    physical_resource_id = f"{bucket_name}/{hashed_names}"
-    return physical_resource_id
+    return layer_arn_sha256
 
 
 def _files():
@@ -80,13 +84,19 @@ def create(event, context):
 @helper.update
 def update(event, context):
     logger.info('Handling update')
+    _delete_files(event)
     return _upload(event)
+
+
+def _delete_files(event):
+    bucket_name = event['ResourceProperties']['BucketName']
+    for _, target_path in _files():
+        key = f'{_layer_arn_sha256()}/{target_path}'
+        logger.info(f'Deleting {key}')
+        s3.delete_object(Bucket=bucket_name, Key=key)
 
 
 @helper.delete
 def delete(event, context):
     logger.info('Handling delete')
-    bucket_name = event['ResourceProperties']['BucketName']
-    for local_path, target_path in _files():
-        logger.info(f'Deleting {target_path}')
-        s3.delete_object(Bucket=bucket_name, Key=target_path)
+    _delete_files(event)

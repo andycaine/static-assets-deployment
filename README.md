@@ -55,6 +55,20 @@ Resources:
         RestrictPublicBuckets: true
 ```
 
+Note that files are uploaded to an s3 "folder" that is the physical resource ID of this custom resource. For example, to serve the files from CloudFront, you need to do something like:
+
+```yaml
+  CloudFrontDistro:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Origins:
+          - Id: SiteStaticAssets
+            DomainName: !GetAtt SiteStaticAssetsBucket.RegionalDomainName
+            OriginPath: !Sub /${StaticAssetsDeployment.Outputs.DeploymentFolder}
+            ...
+```
+
 Then you can deploy your stack. These steps assume you have the [SAM CLI installed and set up for your environment](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html):
 
 ```
