@@ -52,7 +52,7 @@ def _upload(event):
     logger.info(dirs)
     bucket_name = event['ResourceProperties']['BucketName']
     for local_path, target_path in _files():
-        logger.info(f'Uploading to {target_path}')
+        logger.info(f'Uploading to {layer_arn_sha256}/{target_path}')
         s3.upload_file(
             local_path,
             bucket_name,
