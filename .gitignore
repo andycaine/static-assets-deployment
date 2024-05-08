@@ -1,3 +1,5 @@
 .envrc
 .aws-sam
 packaged.yaml
+.venv/
+__pycache__/

@@ -11,13 +11,11 @@ helper = crhelper.CfnResource(
     log_level='INFO',
     boto_level='CRITICAL',
 )
-s3 = boto3.client('s3')
 dir = '/opt/python'
-cache_control = os.getenv('CACHE_CONTROL', 'max-age=31536000, immutable')
-layer_arn = os.environ['LAYER_ARN']
+s3 = boto3.client('s3')
 
 
-def _content_type(file_name):
+def content_type(file_name):
     """
     Returns the content type for the given file name.
 
@@ -41,24 +39,28 @@ def handler(event, context):
     helper(event, context)
 
 
-def _layer_arn_sha256():
-    return hashlib.sha256(layer_arn.encode()).hexdigest()
+def sha256(s):
+    return hashlib.sha256(s.encode()).hexdigest()
 
 
-def _upload(event):
+def upload(event):
     uploaded = []
-    layer_arn_sha256 = _layer_arn_sha256()
-    dirs = os.listdir(dir)
-    logger.info(dirs)
-    bucket_name = event['ResourceProperties']['BucketName']
-    for local_path, target_path in _files():
+    props = event['ResourceProperties']
+    layer_arn = props['StaticAssetsLayerArn']
+    logger.info(f'Layer ARN is {layer_arn}')
+    layer_arn_sha256 = sha256(layer_arn)
+    bucket_name = props['BucketName']
+    cache_control = props.get('CacheControl', 'max-age=31536000, immutable')
+    logger.info(f'CacheControl is {cache_control}')
+
+    for local_path, target_path in files():
         logger.info(f'Uploading to {layer_arn_sha256}/{target_path}')
         s3.upload_file(
             local_path,
             bucket_name,
             f'{layer_arn_sha256}/{target_path}',
             ExtraArgs={
-                'ContentType': _content_type(local_path),
+                'ContentType': content_type(local_path),
                 'CacheControl': cache_control
             }
         )
@@ -67,7 +69,7 @@ def _upload(event):
     return layer_arn_sha256
 
 
-def _files():
+def files():
     for root, _, files in os.walk(dir):
         for file in files:
             local_path = os.path.join(root, file)
@@ -78,20 +80,25 @@ def _files():
 @helper.create
 def create(event, context):
     logger.info('Handling create')
-    return _upload(event)
+    return upload(event)
 
 
 @helper.update
 def update(event, context):
     logger.info('Handling update')
-    _delete_files(event)
-    return _upload(event)
+    delete_files(event)
+    return upload(event)
 
 
-def _delete_files(event):
-    bucket_name = event['ResourceProperties']['BucketName']
-    for _, target_path in _files():
-        key = f'{_layer_arn_sha256()}/{target_path}'
+def delete_files(event):
+    props = event['ResourceProperties']
+    layer_arn = props['StaticAssetsLayerArn']
+    logger.info(f'Layer ARN is {layer_arn}')
+    layer_arn_sha256 = sha256(layer_arn)
+    bucket_name = props['BucketName']
+
+    for _, target_path in files():
+        key = f'{layer_arn_sha256}/{target_path}'
         logger.info(f'Deleting {key}')
         s3.delete_object(Bucket=bucket_name, Key=key)
 
@@ -99,4 +106,4 @@ def _delete_files(event):
 @helper.delete
 def delete(event, context):
     logger.info('Handling delete')
-    _delete_files(event)
+    delete_files(event)

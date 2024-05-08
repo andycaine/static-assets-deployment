@@ -28,7 +28,7 @@ Metadata:
     ReadmeUrl: README.md
     Labels: ['cloudformation', 's3', 'python']
     HomePageUrl: https://github.com/andycaine/static-assets-deployment#readme
-    SemanticVersion: 0.3.3
+    SemanticVersion: 0.3.5
     SourceCodeUrl: https://github.com/andycaine/static-assets-deployment
 Resources:
 
@@ -41,10 +41,6 @@ Resources:
       Handler: app.handler
       CodeUri: ./sad
       Timeout: !Ref Timeout
-      Environment:
-        Variables:
-          CACHE_CONTROL: !Ref CacheControl
-          LAYER_ARN: !Ref StaticAssetsLayerArn
       Layers:
         - !Ref StaticAssetsLayerArn
       Policies:
@@ -57,6 +53,7 @@ Resources:
       ServiceToken: !GetAtt StaticAssetsDeployer.Arn
       BucketName: !Ref StaticAssetsBucket
       StaticAssetsLayerArn: !Ref StaticAssetsLayerArn
+      CacheControl: !Ref CacheControl
 
 Outputs:
   DeploymentFolder:

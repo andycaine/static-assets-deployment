@@ -4,7 +4,13 @@ clean:
 	rm -f packaged.yaml
 	rm -rf .aws-sam/build
 
-.aws-sam/build: template.yaml sad/app.py
+install:
+	pip install -r requirements.txt
+
+test: sad/app.py tests/test_app.py
+	pytest
+
+.aws-sam/build: template.yaml test
 	sam build
 
 packaged.yaml: .aws-sam/build
