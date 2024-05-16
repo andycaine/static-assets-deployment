@@ -29,7 +29,7 @@ jobs:
         aws-region: eu-west-2
     - name: Package app
       run: |
-        sam package --resolve-s3 --output-template-file packaged.yaml
+        sam package --s3-bucket aws-sam-cli-managed-default-samclisourcebucket-64zranuhuogu  --output-template-file packaged.yaml
     - name: Publish app
       run: |
         sam publish --template packaged.yaml
