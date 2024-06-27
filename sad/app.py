@@ -29,10 +29,11 @@ def content_type(file_name):
         '.css': 'text/css',
         '.js': 'application/javascript',
         '.xml': 'application/xml',
+        '.txt': 'text/plain',
         '.png': 'image/png',
     }
     _, ext = os.path.splitext(file_name)
-    return mime_types.get(ext, 'binary/octet-stream')
+    return mime_types.get(ext, 'application/octet-stream')
 
 
 def handler(event, context):
