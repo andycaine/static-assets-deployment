@@ -61,11 +61,9 @@ def upload(event):
     uploaded = []
     props = event['ResourceProperties']
     layer_arn = props['StaticAssetsLayerArn']
-    logger.info(f'Layer ARN is {layer_arn}')
     layer_arn_sha256 = sha256(layer_arn)
     bucket_name = props['BucketName']
     cache_control = props.get('CacheControl', 'max-age=31536000, immutable')
-    logger.info(f'CacheControl is {cache_control}')
 
     for local_path, target_path in files():
         logger.info(f'Uploading to {layer_arn_sha256}/{target_path}')
@@ -107,7 +105,6 @@ def update(event, context):
 def delete_files(event):
     props = event['ResourceProperties']
     layer_arn = props['StaticAssetsLayerArn']
-    logger.info(f'Layer ARN is {layer_arn}')
     layer_arn_sha256 = sha256(layer_arn)
     bucket_name = props['BucketName']
 
